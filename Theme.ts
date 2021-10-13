@@ -2,6 +2,8 @@
 import { DefaultTheme } from 'styled-components';
 
 
+
+
 export const lightTheme: DefaultTheme = {
     
     mode: 'light',
@@ -11,7 +13,7 @@ export const lightTheme: DefaultTheme = {
 	PRIMARY_BUTTON_COLOR: '#8f5757',
 	SHADOW_COLOR: 'rgba(0, 0, 0, 0.19)',
 	SECONDARY_BUTTON_COLOR: '#3d405b',
-	STATUS_BAR: 'dark',
+	STATUS_BAR:'dark'
     
 	
 };
@@ -25,7 +27,7 @@ export const darkTheme: DefaultTheme = {
         PRIMARY_BUTTON_COLOR: '#8f5757',
         SHADOW_COLOR: 'rgba(0, 0, 0, 0.19)',
         SECONDARY_BUTTON_COLOR: '#3d405b',
-        STATUS_BAR: 'light',
+        STATUS_BAR: 'light'
     
 
 };

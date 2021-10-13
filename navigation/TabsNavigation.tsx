@@ -7,9 +7,10 @@ import { useAppSelector } from '../redux/store';
 
 function TabBarIcon(props: {
     name: React.ComponentProps<typeof FontAwesome>['name'];
-    color: string;
+    color?: string;
   }) {
-    return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
+    const theme = useAppSelector(state => state.theme)
+    return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} color={theme.PRIMARY_BUTTON_COLOR} />;
   }
   
 
@@ -20,22 +21,37 @@ const TabsNavigation:FC  = () => {
     return (
        
        <Navigator screenOptions={{headerShown:false, tabBarStyle: {
-           backgroundColor:theme.BACKGROUND_COLOR
-       }}}>
+           backgroundColor:theme.BACKGROUND_COLOR,
+        
+       },
+       tabBarActiveTintColor: theme.TEXT_COLOR ,
+       tabBarActiveBackgroundColor: theme.mode === 'dark' ? '#272729': '#b9adad7d'
+
+
+
+
+
+
+
+
+
+    
+    }}>
            <Screen name='HomeStack' component={Home} options={{
-               tabBarIcon: ({focused, color, size}) => <TabBarIcon name='home' color={color} />
+               title:'Home',
+               tabBarIcon: ({focused, color, size}) => <TabBarIcon name='home'  />
            }} />
            <Screen name='OrdersStack' component={Home} options={{
                title:'Orders',
-            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='first-order' color={color} />
+            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='first-order' />
         }} />
         <Screen name='CartStack' component={Home} options={{
             title:'Cart',
-            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='shopping-cart' color={color} />
+            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='shopping-cart' />
         }} />
         <Screen name='ProfileStack' component={Home} options={{
             title:'Profile',
-            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='user' color={color} />
+            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='user' />
         }} />
        </Navigator>
 
