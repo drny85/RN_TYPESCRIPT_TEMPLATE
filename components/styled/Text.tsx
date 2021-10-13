@@ -11,6 +11,7 @@ interface TextProps {
 
 const Text = styled.Text<TextProps>`
 color: ${({theme}) => theme.TEXT_COLOR};
+font-family:'montserrat'
 ${({ small, large, block }: any) => {
 		switch (true) {
 			case small:
@@ -24,7 +25,7 @@ ${({ small, large, block }: any) => {
 	${({ title, caption }: any) => {
 		switch (true) {
 			case title:
-				return `font-weight: bold`;
+				return `font-family: montserrat-bold`;
 			case caption:
 				return `font-style: 'italic`;
 			default:

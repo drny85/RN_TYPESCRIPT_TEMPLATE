@@ -1,10 +1,17 @@
+import { lightTheme } from './../Theme';
+import { useAppDispatch } from './../redux/store';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
+import useColorScheme from './useColorScheme';
+import { darkTheme } from '../Theme';
+import { switchTheme } from '../redux/themeReducer/themeSlide';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
+  const isDark = useColorScheme() === 'dark'
+  const dispatch = useAppDispatch()
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
@@ -13,9 +20,11 @@ export default function useCachedResources() {
         SplashScreen.preventAutoHideAsync();
 
         // Load fonts
+        isDark ? dispatch(switchTheme(darkTheme)) : dispatch(switchTheme(lightTheme))
         await Font.loadAsync({
           ...FontAwesome.font,
-          'space-mono': require('../assets/fonts/SpaceMono-Regular.ttf'),
+          'montserrat': require('../assets/fonts/Montserrat-Regular.ttf'),
+          'montserrat-bold': require('../assets/fonts/Montserrat-Bold.ttf')
         });
       } catch (e) {
         // We might want to provide this error information to an error reporting service
@@ -27,7 +36,7 @@ export default function useCachedResources() {
     }
 
     loadResourcesAndDataAsync();
-  }, []);
+  }, [isDark]);
 
   return isLoadingComplete;
 }

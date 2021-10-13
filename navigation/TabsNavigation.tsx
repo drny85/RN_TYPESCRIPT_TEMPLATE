@@ -22,9 +22,11 @@ const TabsNavigation:FC  = () => {
        
        <Navigator screenOptions={{headerShown:false, tabBarStyle: {
            backgroundColor:theme.BACKGROUND_COLOR,
+           
         
        },
        tabBarActiveTintColor: theme.TEXT_COLOR ,
+       tabBarLabelStyle: {fontFamily:'montserrat'},
        tabBarActiveBackgroundColor: theme.mode === 'dark' ? '#272729': '#b9adad7d'
 
 
