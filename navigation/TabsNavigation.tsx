@@ -1,64 +1,103 @@
-import { RootTabParamList } from '../types';
-import React, {FC} from 'react'
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
-import { Home } from '../screens';
-import {FontAwesome} from '@expo/vector-icons'
+import { RestaurantsStackParamList, RootTabParamList } from '../types';
+import React, { FC } from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppSelector } from '../redux/store';
 
+import RestaurantsStack from './restaurants/RestaurantsStack';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import OrdersStack from './orders/OrdersStack';
+import CartStack from './cart/CartStack';
+import AuthStack from './auth/AuthStack';
+
 function TabBarIcon(props: {
-    name: React.ComponentProps<typeof FontAwesome>['name'];
-    color?: string;
-  }) {
-    const theme = useAppSelector(state => state.theme)
-    return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} color={theme.PRIMARY_BUTTON_COLOR} />;
-  }
-  
-
-const {Navigator, Screen} = createBottomTabNavigator<RootTabParamList>()
-
-const TabsNavigation:FC  = () => {
-    const theme = useAppSelector(state => state.theme)
-    return (
-       
-       <Navigator screenOptions={{headerShown:false, tabBarStyle: {
-           backgroundColor:theme.BACKGROUND_COLOR,
-           
-        
-       },
-       tabBarActiveTintColor: theme.TEXT_COLOR ,
-       tabBarLabelStyle: {fontFamily:'montserrat'},
-       tabBarActiveBackgroundColor: theme.mode === 'dark' ? '#272729': '#b9adad7d'
-
-
-
-
-
-
-
-
-
-    
-    }}>
-           <Screen name='HomeStack' component={Home} options={{
-               title:'Home',
-               tabBarIcon: ({focused, color, size}) => <TabBarIcon name='home'  />
-           }} />
-           <Screen name='OrdersStack' component={Home} options={{
-               title:'Orders',
-            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='first-order' />
-        }} />
-        <Screen name='CartStack' component={Home} options={{
-            title:'Cart',
-            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='shopping-cart' />
-        }} />
-        <Screen name='ProfileStack' component={Home} options={{
-            title:'Profile',
-            tabBarIcon: ({focused, color, size}) => <TabBarIcon name='user' />
-        }} />
-       </Navigator>
-
-    )
-    
+	name: React.ComponentProps<typeof Ionicons>['name'];
+	color?: string;
+}) {
+	const theme = useAppSelector((state) => state.theme);
+	return (
+		<Ionicons
+			size={30}
+			style={{ marginBottom: -2 }}
+			{...props}
+			color={theme.TEXT_COLOR}
+		/>
+	);
 }
 
-export default TabsNavigation
+const { Navigator, Screen } = createBottomTabNavigator<RootTabParamList>();
+
+const TabsNavigation: FC = () => {
+	const theme = useAppSelector((state) => state.theme);
+	return (
+		<Navigator
+			screenOptions={{
+				headerShown: false,
+
+				tabBarStyle: {
+					backgroundColor: theme.BACKGROUND_COLOR,
+					borderTopWidth: 0,
+					elevation: 0,
+					borderColor: theme.BACKGROUND_COLOR,
+				},
+				tabBarActiveTintColor: theme.SECONDARY_BUTTON_COLOR,
+				tabBarShowLabel: false,
+				tabBarActiveBackgroundColor: theme.SHADOW_COLOR,
+			}}
+		>
+			<Screen
+				name='RestaurantsStack'
+				component={RestaurantsStack}
+				options={({ route }) => ({
+					tabBarStyle: {
+						display: tabBarVisibility(route),
+						backgroundColor: theme.BACKGROUND_COLOR,
+					},
+					tabBarIcon: ({ focused, color, size }) => (
+						<TabBarIcon name='restaurant-outline' />
+					),
+				})}
+			/>
+			<Screen
+				name='OrdersStack'
+				component={OrdersStack}
+				options={{
+					title: 'Orders',
+					tabBarIcon: ({ focused, color, size }) => (
+						<TabBarIcon name='md-list' />
+					),
+				}}
+			/>
+			<Screen
+				name='CartStack'
+				component={CartStack}
+				options={{
+					tabBarBadge: 3,
+					tabBarBadgeStyle: { backgroundColor: theme.SECONDARY_BUTTON_COLOR },
+					tabBarIcon: ({ focused, color, size }) => (
+						<TabBarIcon name='cart-outline' />
+					),
+				}}
+			/>
+			<Screen
+				name='ProfileStack'
+				component={AuthStack}
+				options={{
+					tabBarIcon: ({ focused, color, size }) => (
+						<TabBarIcon name='person' />
+					),
+				}}
+			/>
+		</Navigator>
+	);
+};
+
+const tabBarVisibility = (route: any) => {
+	const routeName = getFocusedRouteNameFromRoute(route);
+	if (routeName === 'Restaurant' || routeName === 'ProductDetails') {
+		return 'none';
+	}
+	return 'flex';
+};
+
+export default TabsNavigation;
