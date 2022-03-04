@@ -43,7 +43,14 @@ const Restaurant: FC<Props> = ({ navigation }) => {
 	};
 
 	const renderItems: ListRenderItem<Product> = ({ index, item }) => {
-		return <ProductCard product={item} />;
+		return (
+			<ProductCard
+				product={item}
+				onPress={() =>
+					navigation.navigate('ProductDetails', { productId: item.id! })
+				}
+			/>
+		);
 	};
 
 	const renderCategories: ListRenderItem<Category> = ({ index, item }) => {
@@ -140,18 +147,20 @@ const Restaurant: FC<Props> = ({ navigation }) => {
 				</Text>
 			</Header>
 			<View style={{ marginBottom: 10 }} />
-			<MostPopularView scrollY={currentX}>
-				<Text style={{ ...FONTS.h4, padding: 10 }}>Most Popular</Text>
+			{mostPopular.length > 0 && (
+				<MostPopularView scrollY={currentX}>
+					<Text style={{ ...FONTS.h4, padding: 10 }}>Most Popular</Text>
 
-				<Animated.FlatList
-					horizontal
-					showsHorizontalScrollIndicator={false}
-					bounces={false}
-					data={mostPopular}
-					keyExtractor={(item) => item.id!}
-					renderItem={renderMostPopular}
-				/>
-			</MostPopularView>
+					<Animated.FlatList
+						horizontal
+						showsHorizontalScrollIndicator={false}
+						bounces={false}
+						data={mostPopular}
+						keyExtractor={(item) => item.id!}
+						renderItem={renderMostPopular}
+					/>
+				</MostPopularView>
+			)}
 
 			<Animated.FlatList
 				style={{

@@ -7,6 +7,7 @@ import * as React from 'react';
 import useColorScheme from './useColorScheme';
 import { darkTheme } from '../Theme';
 import { switchTheme } from '../redux/themeReducer/themeSlide';
+import { getCartItems } from '../redux/cartReducer/cartActions';
 
 export default function useCachedResources() {
 	const [isLoadingComplete, setLoadingComplete] = React.useState(false);
@@ -35,6 +36,7 @@ export default function useCachedResources() {
 			} finally {
 				setLoadingComplete(true);
 				SplashScreen.hideAsync();
+				dispatch(getCartItems());
 			}
 		}
 

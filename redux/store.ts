@@ -2,10 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import themeSlide from './themeReducer/themeSlide';
 
 import { useSelector, TypedUseSelectorHook, useDispatch } from 'react-redux';
-import storesSlide from './storesReducer/storesSlide';
-import productsSlide from './productsReducer/productsSlide';
-import authSlide from './authReducer/authSlide';
-import categoriesSlide from './categoryReducer/categoriesSlide';
+import {
+	authSlide,
+	cartSlide,
+	categoriesSlide,
+	productsSlide,
+	storesSlide,
+} from '.';
 
 const reducer = {
 	theme: themeSlide,
@@ -13,6 +16,7 @@ const reducer = {
 	products: productsSlide,
 	auth: authSlide,
 	categories: categoriesSlide,
+	cart: cartSlide,
 };
 
 const store = configureStore({

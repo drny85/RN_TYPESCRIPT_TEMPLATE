@@ -8,13 +8,14 @@ import useCachedResources from './hooks/useCachedResources';
 import TabsNavigation from './navigation/TabsNavigation';
 import store, { useAppSelector } from './redux/store';
 import { ThemeProvider } from 'styled-components';
+import Loader from './components/Loader';
 
 const App: React.FC = () => {
 	const isLoadingComplete = useCachedResources();
 
 	const theme = useAppSelector((state) => state.theme);
 	if (!isLoadingComplete) {
-		return null;
+		return <Loader />;
 	}
 
 	return (

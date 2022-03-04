@@ -4,21 +4,30 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import React, { FC } from 'react';
+import React, { FC, useRef, useState } from 'react';
 import { Text } from '.';
 import { FONTS, SIZES } from '../constants';
-import { useAppSelector } from '../redux/store';
+import { useAppDispatch, useAppSelector } from '../redux/store';
 import { Product } from '../redux/productsReducer/productsSlide';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/core';
+import Shopper from './Shopper';
+import { addToCart, deleteFromCart } from '../redux/cartReducer/cartActions';
 
 interface Props {
 	product: Product;
+	onPress: () => void;
 }
-const ProductCard: FC<Props> = ({ product }) => {
+const ProductCard: FC<Props> = ({ product, onPress }) => {
 	const theme = useAppSelector((state) => state.theme);
+	const { cartItems } = useAppSelector((state) => state.cart);
+	const navigation = useNavigation();
+	const dispatch = useAppDispatch();
+	const productInCart = cartItems.find((p) => product.id === p.id);
 
 	return (
 		<TouchableOpacity
+			onPress={onPress}
 			style={[
 				styles.card,
 				{
@@ -32,6 +41,33 @@ const ProductCard: FC<Props> = ({ product }) => {
 				source={{ uri: product.imageUrl }}
 				style={styles.image}
 			>
+				<View style={{ position: 'absolute', right: 0, top: 0 }}>
+					{product.sizes === null && (
+						<Shopper
+							value={productInCart?.quantity!}
+							onAdd={() => {
+								dispatch(
+									addToCart({
+										...product,
+										size: productInCart?.size || null,
+										sizes: productInCart?.sizes || null,
+										quantity: productInCart?.quantity || 1,
+									})
+								);
+							}}
+							onDelete={() => {
+								dispatch(
+									deleteFromCart({
+										...product,
+										size: productInCart?.size!,
+										sizes: productInCart?.sizes!,
+										quantity: productInCart?.quantity!,
+									})
+								);
+							}}
+						/>
+					)}
+				</View>
 				<LinearGradient
 					style={{
 						position: 'absolute',

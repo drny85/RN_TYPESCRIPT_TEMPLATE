@@ -27,7 +27,7 @@ const Shopper: FC<Props> = ({ value, onAdd, onDelete }) => {
 
 	useEffect(() => {
 		if (value > 0) {
-			w.value = SIZES.width / 3;
+			w.value = SIZES.isSmallDevice ? SIZES.width * 0.3 : SIZES.width * 0.2;
 		} else {
 			w.value = 60;
 		}
@@ -55,6 +55,7 @@ const Shopper: FC<Props> = ({ value, onAdd, onDelete }) => {
 					<Text style={{ ...FONTS.h3, color: theme.WHITE_COLOR }}>{value}</Text>
 				</>
 			)}
+
 			<TouchableOpacity onPress={onAdd}>
 				<AntDesign name='pluscircle' size={34} color={theme.WHITE_COLOR} />
 			</TouchableOpacity>

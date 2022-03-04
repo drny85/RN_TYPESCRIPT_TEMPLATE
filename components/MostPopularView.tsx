@@ -12,6 +12,7 @@ interface Props {
 
 const MostPopularView: FC<Props> = ({ scrollY, children }) => {
 	const w = useSharedValue(SIZES.isSmallDevice ? 80 : 100);
+	const scale = useSharedValue(1);
 	const opacity = useSharedValue(1);
 	const flex = useSharedValue(0.2);
 	const animatedStyled = useAnimatedStyle(() => {
@@ -19,6 +20,7 @@ const MostPopularView: FC<Props> = ({ scrollY, children }) => {
 			height: withTiming(w.value),
 			flex: withTiming(flex.value),
 			opacity: withTiming(opacity.value),
+			transform: [{ scale: withTiming(scale.value, { duration: 600 }) }],
 		};
 	});
 
@@ -27,10 +29,12 @@ const MostPopularView: FC<Props> = ({ scrollY, children }) => {
 			w.value = SIZES.isSmallDevice ? 60 : 80;
 			opacity.value = 1;
 			flex.value = 0.2;
+			scale.value = 1;
 		} else {
 			w.value = 0;
 			opacity.value = 0;
 			flex.value = 0;
+			scale.value = 0;
 		}
 	}, [scrollY]);
 	return (

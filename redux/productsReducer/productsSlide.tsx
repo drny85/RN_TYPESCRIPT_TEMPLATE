@@ -17,6 +17,7 @@ export interface Product {
 }
 interface ProductState {
 	products: Product[];
+	product: Product | null;
 	allProducts: Product[];
 	mostPopular: Product[];
 	loading: boolean;
@@ -24,6 +25,7 @@ interface ProductState {
 }
 const initialState: ProductState = {
 	products: [],
+	product: null,
 	mostPopular: [],
 	allProducts: [],
 	loading: false,
@@ -50,11 +52,18 @@ const productsSlide = createSlice({
 				.slice(0, 7)
 				.filter((p) => p.unitSold > 0);
 		},
+		setProduct: (state, { payload }: PayloadAction<string>) => {
+			state.product = state.products.find((p) => p.id === payload)!;
+		},
 	},
 	extraReducers: (builder) => {},
 });
 
-export const { getProductsByRestaurantId, getMorePopular, getAllProducts } =
-	productsSlide.actions;
+export const {
+	getProductsByRestaurantId,
+	getMorePopular,
+	getAllProducts,
+	setProduct,
+} = productsSlide.actions;
 
 export default productsSlide.reducer;

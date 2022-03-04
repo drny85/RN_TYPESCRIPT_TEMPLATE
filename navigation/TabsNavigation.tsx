@@ -29,14 +29,15 @@ const { Navigator, Screen } = createBottomTabNavigator<RootTabParamList>();
 
 const TabsNavigation: FC = () => {
 	const theme = useAppSelector((state) => state.theme);
+	const { itemsCount } = useAppSelector((state) => state.cart);
+
 	return (
 		<Navigator
 			screenOptions={{
 				headerShown: false,
-
 				tabBarStyle: {
 					backgroundColor: theme.BACKGROUND_COLOR,
-					borderTopWidth: 0,
+					borderTopWidth: 3,
 					elevation: 0,
 					borderColor: theme.BACKGROUND_COLOR,
 				},
@@ -72,7 +73,7 @@ const TabsNavigation: FC = () => {
 				name='CartStack'
 				component={CartStack}
 				options={{
-					tabBarBadge: 3,
+					tabBarBadge: itemsCount,
 					tabBarBadgeStyle: { backgroundColor: theme.SECONDARY_BUTTON_COLOR },
 					tabBarIcon: ({ focused, color, size }) => (
 						<TabBarIcon name='cart-outline' />

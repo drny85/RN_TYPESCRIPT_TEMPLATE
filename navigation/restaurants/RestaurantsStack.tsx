@@ -4,6 +4,7 @@ import Restaurant from '../../screens/restaurants/Restaurant';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Restaurants from '../../screens/restaurants/Restaurants';
 import { RestaurantsStackParamList } from '../../types';
+import ProductDetails from '../../screens/restaurants/ProductDetails';
 
 const { Navigator, Screen } =
 	createNativeStackNavigator<RestaurantsStackParamList>();
@@ -15,6 +16,7 @@ const RestaurantsStack = () => {
 		>
 			<Screen name='Restaurants' component={Restaurants} />
 			<Screen name='Restaurant' component={Restaurant} />
+			<Screen name='ProductDetails' component={ProductDetails} />
 		</Navigator>
 	);
 };

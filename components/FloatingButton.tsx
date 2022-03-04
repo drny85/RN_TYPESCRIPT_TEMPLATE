@@ -15,7 +15,11 @@ const FloatingButton: FC<Props> = ({ iconName, onPress, containerStyle }) => {
 		<TouchableOpacity
 			style={[
 				styles.container,
-				{ ...containerStyle, backgroundColor: theme.SECONDARY_BUTTON_COLOR },
+				{
+					...containerStyle,
+					backgroundColor: theme.SECONDARY_BUTTON_COLOR,
+					shadowColor: theme.SHADOW_COLOR,
+				},
 			]}
 			onPress={onPress}
 		>
@@ -34,7 +38,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 		elevation: 10,
-		shadowColor: '#34495e',
 		shadowOffset: { width: 2, height: 3 },
 		shadowOpacity: 0.7,
 	},
