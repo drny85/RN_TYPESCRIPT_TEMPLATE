@@ -8,40 +8,45 @@ import useColorScheme from './useColorScheme';
 import { darkTheme } from '../Theme';
 import { switchTheme } from '../redux/themeReducer/themeSlide';
 import { getCartItems } from '../redux/cartReducer/cartActions';
+import { LogBox } from 'react-native';
+import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 
 export default function useCachedResources() {
-	const [isLoadingComplete, setLoadingComplete] = React.useState(false);
-	const isDark = useColorScheme() === 'dark';
-	const dispatch = useAppDispatch();
+    const [isLoadingComplete, setLoadingComplete] = React.useState(false);
+    const isDark = useColorScheme() === 'dark';
+    const dispatch = useAppDispatch();
+    const { removeItem } = useAsyncStorage('cartId');
+    removeItem();
 
-	// Load any resources or data that we need prior to rendering the app
-	React.useEffect(() => {
-		async function loadResourcesAndDataAsync() {
-			try {
-				SplashScreen.preventAutoHideAsync();
+    // Load any resources or data that we need prior to rendering the app
+    React.useEffect(() => {
+        async function loadResourcesAndDataAsync() {
+            try {
+                LogBox.ignoreAllLogs(true);
+                SplashScreen.preventAutoHideAsync();
 
-				// Load fonts
-				isDark
-					? dispatch(switchTheme(darkTheme))
-					: dispatch(switchTheme(lightTheme));
-				await Font.loadAsync({
-					...FontAwesome.font,
-					montserrat: require('../assets/fonts/Montserrat-Regular.ttf'),
-					'montserrat-bold': require('../assets/fonts/Montserrat-Bold.ttf'),
-					lobster: require('../assets/fonts/Lobster-Regular.ttf'),
-				});
-			} catch (e) {
-				// We might want to provide this error information to an error reporting service
-				console.warn(e);
-			} finally {
-				setLoadingComplete(true);
-				SplashScreen.hideAsync();
-				dispatch(getCartItems());
-			}
-		}
+                // Load fonts
+                isDark
+                    ? dispatch(switchTheme(darkTheme))
+                    : dispatch(switchTheme(lightTheme));
+                await Font.loadAsync({
+                    ...FontAwesome.font,
+                    montserrat: require('../assets/fonts/Montserrat-Regular.ttf'),
+                    'montserrat-bold': require('../assets/fonts/Montserrat-Bold.ttf'),
+                    lobster: require('../assets/fonts/Lobster-Regular.ttf')
+                });
+            } catch (e) {
+                // We might want to provide this error information to an error reporting service
+                console.warn(e);
+            } finally {
+                setLoadingComplete(true);
+                SplashScreen.hideAsync();
+                dispatch(getCartItems());
+            }
+        }
 
-		loadResourcesAndDataAsync();
-	}, [isDark]);
+        loadResourcesAndDataAsync();
+    }, [isDark]);
 
-	return isLoadingComplete;
+    return isLoadingComplete;
 }

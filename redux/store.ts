@@ -1,6 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import themeSlide from './themeReducer/themeSlide';
 
+import {createLogger} from 'redux-logger'
+const logger = createLogger({
+	
+})
+
 import { useSelector, TypedUseSelectorHook, useDispatch } from 'react-redux';
 import {
 	authSlide,
@@ -21,7 +26,8 @@ const reducer = {
 
 const store = configureStore({
 	reducer,
-	devTools: process.env.NODE_ENV !== 'production',
+	devTools: false,
+	middleware: (getDefaultMiddleware) => getDefaultMiddleware()
 });
 
 export type AppDispatch = typeof store.dispatch;

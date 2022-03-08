@@ -6,7 +6,8 @@
 		"ios": "expo start --ios",
 		"web": "expo start --web",
 		"eject": "expo eject",
-		"test": "jest --watchAll"
+		"test": "jest --watchAll",
+		"prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write"
 	},
 	"jest": {
 		"preset": "jest-expo"
@@ -24,6 +25,7 @@
 		"babel-plugin-inline-dotenv": "^1.6.0",
 		"expo": "~42.0.1",
 		"expo-asset": "~8.3.2",
+		"expo-blur": "~9.0.3",
 		"expo-constants": "~11.0.1",
 		"expo-font": "~9.2.1",
 		"expo-image-picker": "~10.2.3",
@@ -35,6 +37,7 @@
 		"expo-web-browser": "~9.2.0",
 		"firebase": "8.2.3",
 		"moment": "^2.29.1",
+		"moti": "^0.17.1",
 		"react": "16.13.1",
 		"react-dom": "16.13.1",
 		"react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
@@ -55,8 +58,11 @@
 		"@types/firebase": "^3.2.1",
 		"@types/react": "^17.0.27",
 		"@types/react-native": "^0.65.5",
+		"@types/redux-logger": "^3.0.9",
 		"@types/styled-components-react-native": "^5.1.1",
 		"jest-expo": "~41.0.0-beta.0",
+		"prettier": "^2.5.1",
+		"redux-logger": "^3.0.6",
 		"typescript": "~4.0.0"
 	},
 	"private": true

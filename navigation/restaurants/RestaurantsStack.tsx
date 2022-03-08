@@ -7,17 +7,20 @@ import { RestaurantsStackParamList } from '../../types';
 import ProductDetails from '../../screens/restaurants/ProductDetails';
 
 const { Navigator, Screen } =
-	createNativeStackNavigator<RestaurantsStackParamList>();
+    createNativeStackNavigator<RestaurantsStackParamList>();
 
 const RestaurantsStack = () => {
-	return (
-		<Navigator
-			screenOptions={{ headerShown: false, animation: 'slide_from_bottom' }}
-		>
-			<Screen name='Restaurants' component={Restaurants} />
-			<Screen name='Restaurant' component={Restaurant} />
-			<Screen name='ProductDetails' component={ProductDetails} />
-		</Navigator>
-	);
+    return (
+        <Navigator
+            screenOptions={{
+                headerShown: false,
+                animation: 'slide_from_bottom'
+            }}
+        >
+            <Screen name="Restaurants" component={Restaurants} />
+            <Screen name="Restaurant" component={Restaurant} />
+            <Screen name="ProductDetails" component={ProductDetails} />
+        </Navigator>
+    );
 };
 export default RestaurantsStack;

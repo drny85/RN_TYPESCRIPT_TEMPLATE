@@ -11,6 +11,7 @@ export interface Product {
 	imageUrl: string;
 	isAvailable: boolean;
 	description?: string;
+	storeId: string;
 	unitSold: number;
 	sizes: ['small', 'medium', 'large', 'xlarge'] | null;
 	category: string;

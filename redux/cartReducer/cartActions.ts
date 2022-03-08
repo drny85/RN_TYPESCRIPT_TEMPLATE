@@ -2,272 +2,333 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../../firebase';
 
-import { calculateCartTotal, CartItem } from './cartSlide';
+import {
+    calculateCartTotal,
+    CartItem,
+    CartState,
+    resetCartState
+} from './cartSlide';
 import Cart from '../../screens/cart/Cart';
 
 export interface Cart {
-	items: CartItem[];
-	quantity: number;
-	total: number;
+    items: CartItem[];
+    quantity: number;
+    total: number;
 }
 
-const CART_ID = 'cartId';
+const CART_ID = '@cartId';
+
 export const getCartOrCreateCart = createAsyncThunk(
-	'cart/createCart',
-	async (_, { rejectWithValue }) => {
-		try {
-			let cartId;
-			const data = await AsyncStorage.getItem(CART_ID);
-			if (data === null) {
-				const query = await db
-					.collection('carts')
-					.add({ items: [], quantity: 0, total: 0 });
-				const id = (await query.get()).id;
-				cartId = id;
-				await AsyncStorage.setItem(CART_ID, JSON.stringify(id));
-			} else {
-				cartId = JSON.parse(data);
+    'cart/getOrCreateCart',
+    async (_, { rejectWithValue }): Promise<string | undefined> => {
+        try {
+            const cartId = await AsyncStorage.getItem(CART_ID);
 
-				const found = (await db.collection('carts').doc(cartId).get()).exists;
-				if (found) {
-					console.log(found);
-					cartId = JSON.parse(data);
-				} else {
-					await AsyncStorage.removeItem(CART_ID);
-					const query = await db
-						.collection('carts')
-						.add({ items: [], quantity: 0, total: 0 });
-					cartId = (await query.get()).id;
+            if (cartId !== null) {
+                // CART ID FOUND - VERIFY IF EXIST
+                const cartRef = await db
+                    .collection('carts')
+                    .doc(JSON.parse(cartId))
+                    .get();
 
-					await AsyncStorage.setItem(CART_ID, JSON.stringify(cartId));
-				}
-			}
+                if (cartRef.data() !== undefined) {
+                    return cartRef.ref.id;
+                } else {
+                    //await AsyncStorage.removeItem(CART_ID)
 
-			return cartId;
-		} catch (error) {
-			return rejectWithValue(error);
-		}
-	}
+                    const newCartRef = await db
+                        .collection('carts')
+                        .add({ items: [], quantity: 0, total: 0 });
+                    await AsyncStorage.setItem(
+                        CART_ID,
+                        JSON.stringify(newCartRef.id)
+                    );
+                    return newCartRef.id;
+                }
+            } else {
+                //   CART ID NOT FOUND - CREATE A CART AND SAVE IN LOCAL STORAGE
+
+                if (cartId === null) {
+                    const newCartRef = await db
+                        .collection('carts')
+                        .add({ items: [], quantity: 0, total: 0 });
+                    await AsyncStorage.setItem(
+                        CART_ID,
+                        JSON.stringify(newCartRef.id)
+                    );
+                    return newCartRef.id;
+                }
+            }
+        } catch (error) {
+            rejectWithValue(error);
+            return undefined;
+        }
+    }
 );
 
 export const addToCart = createAsyncThunk(
-	'cart/addToCart',
-	async (product: CartItem, { rejectWithValue, dispatch }) => {
-		try {
-			const cartId = await dispatch(getCartOrCreateCart());
+    'cart/addToCart',
+    async (product: CartItem, { rejectWithValue, dispatch }) => {
+        try {
+            const { payload } = await dispatch(getCartOrCreateCart());
+            const cartId = payload as string;
 
-			const data = db.collection('carts').doc(cartId.payload);
-			const { items, quantity, total } = (await data.get()).data() as Cart;
-			const result = await checkIfProductComeInSizes(
-				product,
-				items,
-				quantity,
-				total,
-				cartId.payload
-			);
+            const data = db.collection('carts').doc(cartId);
+            const { items, quantity, total } = (
+                await data.get()
+            ).data() as Cart;
 
-			return result as Cart;
-		} catch (error) {
-			return rejectWithValue(error);
-		}
-	}
+            const result = await checkIfProductComeInSizes(
+                product,
+                items,
+                quantity,
+                total,
+                cartId
+            );
+
+            return result as Cart;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
 );
 
 export const deleteFromCart = createAsyncThunk(
-	'cart/deleteFromCart',
-	async (product: CartItem, { rejectWithValue, dispatch }) => {
-		try {
-			console.log('P', product);
+    'cart/deleteFromCart',
+    async (product: CartItem, { rejectWithValue, dispatch }) => {
+        try {
+            const { payload: p } = await dispatch(getCartOrCreateCart());
+            const cartId = p as string;
+            const { payload } = await dispatch(getCartItems());
+            const { items, quantity, total } = payload as Cart;
 
-			const { payload: cartId } = await dispatch(getCartOrCreateCart());
-			const { payload } = await dispatch(getCartItems());
-			const { items, quantity, total } = payload as Cart;
+            if (items.length === 0) return;
+            if (product.size !== null) {
+                //DEAL WITH A PRODUCT THAT COMES IN SIZES
+                const itemFound = items.find(
+                    (i) => i.id === product.id && i.size === product.size
+                );
+                if (itemFound) {
+                    //DEAL WITH ITEM FOUND
+                    const size = itemFound.quantity;
 
-			if (items.length === 0) return;
-			if (product.size !== null) {
-				//DEAL WITH A PRODUCT THAT COMES IN SIZES
-				const itemFound = items.find((i) => i.id === product.id);
-				if (itemFound) {
-					//DEAL WITH ITEM FOUND
-					const size = itemFound.quantity;
-					if (size > 1) {
-						const index = items.indexOf(itemFound);
-						const updatedItems = [...items];
-						updatedItems[index].quantity = itemFound.quantity - 1;
-						await removeOneMoreToCart(
-							updatedItems,
-							quantity - 1,
-							total - product.price,
-							cartId
-						);
-					} else {
-						const index = items.findIndex(
-							(i) => i.id === product.id && i.size === product.size
-						);
-						const updatedItems = [...items];
-						updatedItems.splice(index, 1);
-						await removeOneMoreToCart(
-							updatedItems,
-							quantity - 1,
-							total - product.price,
-							cartId
-						);
-					}
-				} else {
-					return rejectWithValue('No Product Found');
-				}
-			} else {
-				const itemFound = items.find((i) => i.id === product.id);
+                    if (size > 1) {
+                        const index = items.findIndex(
+                            (i) =>
+                                i.id === product.id && i.size === product.size
+                        );
+                        const updatedItems = [...items];
+                        updatedItems.splice(index, 1);
+                        const updatedItem = { ...itemFound };
+                        updatedItem.quantity = updatedItem.quantity - 1;
+                        const newItems = [...updatedItems, updatedItem];
+                        return await removeOneMoreToCart(
+                            newItems,
+                            quantity - 1,
+                            total - product.price,
+                            cartId!
+                        );
+                    } else {
+                        const index = items.findIndex(
+                            (i) =>
+                                i.id === product.id && i.size === product.size
+                        );
+                        const updatedItems = [...items];
+                        updatedItems.splice(index, 1);
+                        return await removeOneMoreToCart(
+                            updatedItems,
+                            quantity - 1,
+                            total - product.price,
+                            cartId!
+                        );
+                    }
+                } else {
+                    return rejectWithValue('No Product Found');
+                }
+            } else {
+                const itemFound = items.find((i) => i.id === product.id);
 
-				if (itemFound) {
-					const size = itemFound.quantity;
-					if (size > 1) {
-						const index = items.indexOf(itemFound);
+                if (itemFound) {
+                    const size = itemFound.quantity;
+                    if (size > 1) {
+                        const index = items.indexOf(itemFound);
 
-						const updatedProducts = [...items];
-						updatedProducts.splice(index, 1);
-						const newProduct = { ...product, quantity: product.quantity - 1 };
-						const updatedItems = [...updatedProducts, newProduct];
+                        const updatedProducts = [...items];
+                        updatedProducts.splice(index, 1);
+                        const newProduct = {
+                            ...product,
+                            quantity: product.quantity - 1
+                        };
+                        const updatedItems = [...updatedProducts, newProduct];
 
-						await removeOneMoreToCart(
-							updatedItems,
-							quantity - 1,
-							total - itemFound.price,
-							cartId
-						);
-					} else {
-						const index = items.findIndex((i) => i.id === product.id);
-						const updatedItems = [...items];
-						updatedItems.splice(index, 1);
-						await removeOneMoreToCart(
-							updatedItems,
-							quantity - 1,
-							total - product.price,
-							cartId
-						);
-					}
-				} else {
-					rejectWithValue('No product found');
-				}
-			}
+                        return await removeOneMoreToCart(
+                            updatedItems,
+                            quantity - 1,
+                            total - itemFound.price,
+                            cartId!
+                        );
+                    } else {
+                        const index = items.findIndex(
+                            (i) => i.id === product.id
+                        );
+                        const updatedItems = [...items];
+                        updatedItems.splice(index, 1);
+                        return await removeOneMoreToCart(
+                            updatedItems,
+                            quantity - 1,
+                            total - product.price,
+                            cartId!
+                        );
+                    }
+                } else {
+                    rejectWithValue('No product found');
+                }
+            }
 
-			const ref = await db.collection('carts').doc(cartId).get();
+            const ref = await db.collection('carts').doc(cartId).get();
 
-			return ref.data() as Cart;
-		} catch (error) {
-			return rejectWithValue(error);
-		}
-	}
+            return ref.data() as Cart;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
 );
 
 export const getCartItems = createAsyncThunk(
-	'cart/getCartItems',
-	async (_, { rejectWithValue, dispatch }) => {
-		try {
-			const { payload } = await dispatch(getCartOrCreateCart());
-			const data = (
-				await db.collection('carts').doc(payload).get()
-			).data() as Cart;
+    'cart/getCartItems',
+    async (_, { rejectWithValue, dispatch }) => {
+        try {
+            const { payload: p } = await dispatch(getCartOrCreateCart());
+            const cartId = p as string;
 
-			return data as Cart;
-		} catch (error) {
-			return rejectWithValue(error);
-		}
-	}
+            const data = (
+                await db.collection('carts').doc(cartId).get()
+            ).data() as Cart;
+
+            return data as Cart;
+        } catch (error) {
+            console.log('EE', error);
+            return rejectWithValue(error);
+        }
+    }
 );
 
-const checkIfProductComeInSizes = async (
-	product: CartItem,
-	products: CartItem[],
-	quantity: number,
-	total: number,
-	cartId: string
-) => {
-	try {
-		let data;
-		if (product.size !== null) {
-			const found = products.find((i) => i.id === product.id);
-			if (found) {
-				const indexFound = products.indexOf(found);
-				const newItems = [...products];
-				newItems[indexFound].quantity = found.quantity + 1;
-				await addOneMoreToCart(newItems, quantity, total, cartId);
-			} else {
-				data = await addOneMoreToCart(
-					[...products, product],
-					quantity + 1,
-					total + product.price,
-					cartId
-				);
-			}
-		} else {
-			// ITEM DO NOT COME IN SIZES
-			const itemFound = products.find((i) => i.id === product.id);
-			if (itemFound) {
-				const index = products.indexOf(itemFound);
-				const newItems = [...products];
-				newItems[index].quantity = itemFound.quantity + 1;
-				data = await addOneMoreToCart(
-					newItems,
-					quantity + 1,
-					total + product.price,
-					cartId
-				);
-			} else {
-				data = await addOneMoreToCart(
-					[...products, product],
-					quantity + 1,
-					total + product.price,
-					cartId
-				);
-			}
-		}
+export const clearCart = createAsyncThunk(
+    '',
+    async (_, { dispatch, rejectWithValue }): Promise<boolean> => {
+        try {
+            const data = await AsyncStorage.getItem(CART_ID);
 
-		return data;
-	} catch (error) {
-		console.log(error);
-		return error;
-	}
+            if (data !== null) {
+                const ref = db.collection('carts').doc(data);
+                await ref.delete();
+                await AsyncStorage.removeItem(CART_ID);
+                dispatch(resetCartState());
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            rejectWithValue(error);
+            return false;
+        }
+    }
+);
+const checkIfProductComeInSizes = async (
+    product: CartItem,
+    products: CartItem[],
+    quantity: number,
+    total: number,
+    cartId: string
+) => {
+    try {
+        if (product.size) {
+            console.log('SIZE');
+            const found = products.find(
+                (i) => i.id === product.id && i.size === product.size
+            );
+            if (found) {
+                const indexFound = products.indexOf(found);
+                const newItems = [...products];
+                newItems[indexFound].quantity = found.quantity + 1;
+
+                const cartToUpdate: Cart = {
+                    items: newItems,
+                    quantity: quantity + 1,
+                    total: +parseFloat(total + product.price).toFixed(2)
+                };
+
+                return await addOneMoreToCart(cartToUpdate, cartId);
+            } else {
+                const cartToUpdate: Cart = {
+                    items: [...products, product],
+                    quantity: quantity + 1,
+                    total: +parseFloat(total + product.price).toFixed(2)
+                };
+                return await addOneMoreToCart(cartToUpdate, cartId);
+            }
+        } else {
+            // ITEM DO NOT COME IN SIZES
+            console.log('NO SIZE');
+            const itemFound = products.find((i) => i.id === product.id);
+            if (itemFound) {
+                const index = products.indexOf(itemFound);
+                const newItems = [...products];
+                newItems[index].quantity = itemFound.quantity + 1;
+                const cartToUpdate: Cart = {
+                    items: newItems,
+                    quantity: quantity + 1,
+                    total: +parseFloat(total + product.price).toFixed(2)
+                };
+                return await addOneMoreToCart(cartToUpdate, cartId);
+            } else {
+                const cartToUpdate: Cart = {
+                    items: [...products, product],
+                    quantity: quantity + 1,
+                    total: +parseFloat(total + product.price).toFixed(2)
+                };
+
+                return await addOneMoreToCart(cartToUpdate, cartId);
+            }
+        }
+    } catch (error) {
+        console.log('E on checkIfProductComeInSizes:', error);
+        return error;
+    }
 };
 
-const addOneMoreToCart = async (
-	items: CartItem[],
-	quantity: number,
-	total: number,
-	cardId: string
-) => {
-	try {
-		const ref = await db.collection('carts').doc(cardId);
-		await ref.update({
-			items,
-			quantity,
-			total,
-		});
+const addOneMoreToCart = async (cardItems: Cart, cardId: string) => {
+    try {
+        const ref = db.collection('carts').doc(cardId);
+        await ref.update({
+            ...cardItems
+        });
 
-		const data = (await ref.get()).data() as Cart;
-		return data;
-	} catch (error) {
-		console.log(error);
-	}
+        const data = (await ref.get()).data() as Cart;
+
+        return data;
+    } catch (error) {
+        console.log(error);
+    }
 };
 
 const removeOneMoreToCart = async (
-	items: CartItem[],
-	quantity: number,
-	total: number,
-	cardId: string
+    items: CartItem[],
+    quantity: number,
+    total: number,
+    cardId: string
 ) => {
-	try {
-		const ref = await db.collection('carts').doc(cardId);
-		await ref.update({
-			items,
-			quantity,
-			total,
-		});
+    try {
+        const ref = await db.collection('carts').doc(cardId);
+        await ref.update({
+            items,
+            quantity,
+            total
+        });
 
-		const data = (await ref.get()).data() as Cart;
-		return data;
-	} catch (error) {
-		console.log(error);
-	}
+        const data = (await ref.get()).data() as Cart;
+        return data;
+    } catch (error) {
+        console.log(error);
+    }
 };

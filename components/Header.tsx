@@ -3,29 +3,69 @@ import React, { FC } from 'react';
 import styled from 'styled-components/native';
 import FloatingButton from './FloatingButton';
 import Row from './Row';
-import { SIZES } from '../constants';
+import { FONTS, SIZES } from '../constants';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface Props {
-	onPressBack: () => void;
-	onPress: () => void;
+    onPressBack: () => void;
+    onPress: () => void;
+    cartItemsCount: number;
 }
 
-const Header: FC<Props> = ({ onPressBack, children, onPress }) => {
-	return (
-		<HeaderView style={{ paddingHorizontal: SIZES.padding * 0.5 }}>
-			<Row horizontalAlign='space-between' verticalAlign='center'>
-				<FloatingButton iconName='arrow-left' onPress={onPressBack} />
-				{children}
-				<FloatingButton iconName='list' onPress={onPress} />
-			</Row>
-		</HeaderView>
-	);
+const Header: FC<Props> = ({
+    onPressBack,
+    children,
+    onPress,
+    cartItemsCount
+}) => {
+    return (
+        <HeaderView style={{ paddingHorizontal: SIZES.padding * 0.5 }}>
+            <Row horizontalAlign="space-between" verticalAlign="center">
+                <FloatingButton iconName="arrow-left" onPress={onPressBack} />
+                {children}
+                <TouchableOpacity
+                    onPress={onPress}
+                    style={{ justifyContent: 'center', alignItems: 'center' }}
+                >
+                    <View>
+                        <FloatingButton
+                            size={20}
+                            iconName="shopping-cart"
+                            onPress={onPress}
+                        />
+                        {cartItemsCount > 0 && (
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    right: 5,
+                                    top: 5,
+                                    height: 20,
+                                    zIndex: 20,
+                                    width: 20,
+                                    borderRadius: 10,
+                                    justifyContent: 'center',
+                                    alignContent: 'center',
+                                    backgroundColor: '#fff'
+                                }}
+                            >
+                                <Text
+                                    style={{ ...FONTS.h5, textAlign: 'center' }}
+                                >
+                                    {cartItemsCount}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                </TouchableOpacity>
+            </Row>
+        </HeaderView>
+    );
 };
 
 export default Header;
 
 interface HeaderProps {
-	alignment?: ViewStyle['justifyContent'];
+    alignment?: ViewStyle['justifyContent'];
 }
 
 const HeaderView = styled.View``;
