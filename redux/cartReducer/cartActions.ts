@@ -113,15 +113,14 @@ export const deleteFromCart = createAsyncThunk(
                     const size = itemFound.quantity;
 
                     if (size > 1) {
-                        const index = items.findIndex(
-                            (i) =>
+                        const newItems = [
+                            ...items.map((i) =>
                                 i.id === product.id && i.size === product.size
-                        );
-                        const updatedItems = [...items];
-                        updatedItems.splice(index, 1);
-                        const updatedItem = { ...itemFound };
-                        updatedItem.quantity = updatedItem.quantity - 1;
-                        const newItems = [...updatedItems, updatedItem];
+                                    ? { ...i, quantity: itemFound.quantity - 1 }
+                                    : i
+                            )
+                        ];
+
                         return await removeOneMoreToCart(
                             newItems,
                             quantity - 1,
@@ -151,16 +150,16 @@ export const deleteFromCart = createAsyncThunk(
                 if (itemFound) {
                     const size = itemFound.quantity;
                     if (size > 1) {
-                        const index = items.indexOf(itemFound);
-
-                        const updatedProducts = [...items];
-                        updatedProducts.splice(index, 1);
-                        const newProduct = {
-                            ...product,
-                            quantity: product.quantity - 1
-                        };
-                        const updatedItems = [...updatedProducts, newProduct];
-
+                        const updatedItems = [
+                            ...items.map((i) =>
+                                i.id === itemFound.id
+                                    ? {
+                                          ...i,
+                                          quantity: itemFound.quantity - 1
+                                      }
+                                    : i
+                            )
+                        ];
                         return await removeOneMoreToCart(
                             updatedItems,
                             quantity - 1,
@@ -243,14 +242,17 @@ const checkIfProductComeInSizes = async (
 ) => {
     try {
         if (product.size) {
-            console.log('SIZE');
             const found = products.find(
                 (i) => i.id === product.id && i.size === product.size
             );
             if (found) {
-                const indexFound = products.indexOf(found);
-                const newItems = [...products];
-                newItems[indexFound].quantity = found.quantity + 1;
+                const newItems = [
+                    ...products.map((i) =>
+                        i.id === found.id && i.size === product.size
+                            ? { ...i, quantity: found.quantity + 1 }
+                            : i
+                    )
+                ];
 
                 const cartToUpdate: Cart = {
                     items: newItems,

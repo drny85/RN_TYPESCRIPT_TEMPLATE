@@ -1,4 +1,10 @@
-import { FlatList, ListRenderItem, StyleSheet, View } from 'react-native';
+import {
+    Alert,
+    FlatList,
+    ListRenderItem,
+    StyleSheet,
+    View
+} from 'react-native';
 import React from 'react';
 import { Button, Screen, Text } from '../../components';
 
@@ -35,8 +41,18 @@ const Cart: React.FC<Props> = ({ navigation }) => {
                     <FloatingButton
                         iconName="trash"
                         onPress={async () => {
-                            const { payload } = await dispatch(clearCart());
-                            console.log(payload);
+                            Alert.alert(
+                                'Clear Cart',
+                                'Do you want to empty the cart?',
+                                [
+                                    { text: 'No', style: 'cancel' },
+                                    {
+                                        text: 'Yes',
+                                        onPress: async () =>
+                                            await dispatch(clearCart())
+                                    }
+                                ]
+                            );
                         }}
                     />
                 ) : (

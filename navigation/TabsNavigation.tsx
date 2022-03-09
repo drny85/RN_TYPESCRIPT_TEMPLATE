@@ -41,10 +41,11 @@ const TabsNavigation: FC = () => {
                 headerShown: false,
                 tabBarStyle: {
                     backgroundColor: theme.BACKGROUND_COLOR,
-                    borderTopWidth: 3,
+                    borderTopWidth: 0,
                     elevation: 0,
                     borderColor: theme.BACKGROUND_COLOR
                 },
+
                 tabBarActiveTintColor: theme.SECONDARY_BUTTON_COLOR,
                 tabBarShowLabel: false,
                 tabBarActiveBackgroundColor: theme.SHADOW_COLOR
@@ -56,7 +57,9 @@ const TabsNavigation: FC = () => {
                 options={({ route }) => ({
                     tabBarStyle: {
                         display: tabBarVisibility(route),
-                        backgroundColor: theme.BACKGROUND_COLOR
+                        backgroundColor: theme.BACKGROUND_COLOR,
+                        borderTopWidth: 0,
+                        elevation: 0
                     },
                     tabBarIcon: ({ focused, color, size }) => (
                         <TabBarIcon name="restaurant-outline" />

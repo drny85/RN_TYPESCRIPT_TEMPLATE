@@ -8,13 +8,14 @@ import Row from './Row';
 import Shopper from './Shopper';
 import { addToCart, deleteFromCart } from '../redux/cartReducer/cartActions';
 //import { Image } from 'react-native-expo-image-cache';
-import { MotiView, AnimatePresence, useAnimationState } from 'moti';
+import { MotiView, useAnimationState } from 'moti';
 
 interface Props {
     product: CartItem;
 }
 const CartItemList: React.FC<Props> = ({ product }) => {
     const dispatch = useAppDispatch();
+    const { loading } = useAppSelector((state) => state.cart);
     const theme = useAppSelector((state) => state.theme);
 
     const animationState = useAnimationState({
@@ -31,12 +32,10 @@ const CartItemList: React.FC<Props> = ({ product }) => {
             opacity: 0
         }
     });
+    console.log(product.quantity);
 
     return (
-        <MotiView
-            state={animationState}
-            // exit={{ opacity: 0.3, scale: 0.3 }}
-        >
+        <MotiView state={animationState}>
             <Row containerStyle={styles.view}>
                 <View style={{ flex: 0.3 }}>
                     <Image
@@ -60,11 +59,11 @@ const CartItemList: React.FC<Props> = ({ product }) => {
                     </Text>
 
                     <Row
-                        horizontalAlign="space-around"
+                        horizontalAlign="space-between"
                         verticalAlign="flex-start"
                         containerStyle={{
                             paddingVertical: 8,
-                            paddingHorizontal: 5
+                            paddingHorizontal: SIZES.padding
                         }}
                     >
                         <Text style={{ ...FONTS.body4 }}>
@@ -79,14 +78,17 @@ const CartItemList: React.FC<Props> = ({ product }) => {
                             <Text
                                 style={{
                                     paddingLeft: 20,
-                                    color: theme.SECONDARY_BUTTON_COLOR,
+                                    color: theme.WHITE_COLOR,
+                                    opacity: 0.7,
                                     textTransform: 'capitalize',
                                     ...FONTS.body4
                                 }}
                             >
                                 {product.size}
                             </Text>
-                        ) : null}
+                        ) : (
+                            <Text style={{ ...FONTS.body4 }}></Text>
+                        )}
                     </Row>
 
                     <Row
@@ -96,36 +98,36 @@ const CartItemList: React.FC<Props> = ({ product }) => {
                     >
                         <Shopper
                             value={product.quantity}
-                            onAdd={() =>
-                                dispatch(
-                                    addToCart({
-                                        ...product,
-                                        quantity: 1,
-                                        size: product.size,
-                                        sizes: product.sizes
-                                    })
-                                )
-                            }
+                            onAdd={() => {
+                                if (!loading) {
+                                    dispatch(
+                                        addToCart({
+                                            ...product,
+                                            quantity: 1,
+                                            size: product.size,
+                                            sizes: product.sizes
+                                        })
+                                    );
+                                }
+                            }}
                             onDelete={async () => {
                                 if (product.quantity === 1) {
                                     if (animationState.current === 'to') {
                                         animationState.transitionTo('expanded');
+                                    } else {
+                                        animationState.transitionTo('to');
                                     }
                                 }
-                                const result = await dispatch(
-                                    deleteFromCart({
-                                        ...product,
-                                        quantity: product.quantity,
-                                        size: product.size,
-                                        sizes: product.sizes,
-                                        instruction: product.instruction
-                                    })
-                                );
-                                if (
-                                    result.type ===
-                                    'cart/deleteFromCart/fulfilled'
-                                ) {
-                                    animationState.transitionTo('to');
+                                if (!loading) {
+                                    const result = await dispatch(
+                                        deleteFromCart({
+                                            ...product,
+                                            quantity: product.quantity,
+                                            size: product.size,
+                                            sizes: product.sizes,
+                                            instruction: product.instruction
+                                        })
+                                    );
                                 }
                             }}
                         />

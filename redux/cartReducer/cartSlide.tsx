@@ -92,7 +92,9 @@ const cartSlide = createSlice({
                 ) => {
                     state.loading = false;
                     state.itemsCount = quantity;
-                    state.cartItems = items;
+                    state.cartItems = items.sort((a, b) =>
+                        a.name.toLowerCase() > b.name.toLowerCase() ? 1 : 0
+                    )!;
                     state.cartTotal = total;
                 }
             )
@@ -105,7 +107,9 @@ const cartSlide = createSlice({
             })
             .addCase(deleteFromCart.fulfilled, (state, { payload }) => {
                 state.loading = false;
-                state.cartItems = payload?.items!;
+                state.cartItems = payload?.items.sort((a, b) =>
+                    a.name.toLowerCase() > b.name.toLowerCase() ? 1 : 0
+                )!;
                 state.cartTotal = payload?.total!;
                 state.itemsCount = payload?.quantity!;
             });
